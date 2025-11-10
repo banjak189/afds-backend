@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "Automated Feedback-Driven Security System – backend",
   "main": "backend/server.js",
-  "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js"
-  },
+  "scripts":{
+  "install":"npm rebuild sqlite3 --build-from-source",
+  "start":"node backend/server.js",
+  "dev":"nodemon backend/server.js"
+},
   "dependencies": {
     "express": "^4.19.2",
     "cors": "^2.8.5",
