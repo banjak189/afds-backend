@@ -1,88 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>AFDS Demo</title>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;margin:40px;background:#f7f7f7}
-    h2{color:#444}button{padding:8px 14px;margin:4px 0}
-    pre{background:#fff;border:1px solid #ddd;padding:10px;max-height:200px;overflow:auto}
-  </style>
+  <meta charset="utf-8" />
+  <title>AFDS Auth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Automated Feedback-Driven Security System (AFDS)</h1>
+  <main class="form-wrapper">
+    <!-- LOGIN FORM -->
+    <form id="loginForm" class="form-box login">
+      <h2>Login</h2>
+      <input name="email" type="email" placeholder="Email" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+      <p>Need an account? <span class="switch" data-form="register">Register</span></p>
+    </form>
 
-  <!-- ===== FEEDBACK ===== -->
-  <h2>1. Feedback</h2>
-  <label>Rating (1-5): <input id="rating" type="number" min="1" max="5" value="5"></label><br>
-  <label>Comment: <input id="comment" placeholder="Great service!" size="40"></label><br>
-  <button onclick="postFeedback()">Send Feedback</button>
-  <button onclick="getFeedback()">List Feedback</button>
-  <pre id="fbOut"></pre>
-
-  <!-- ===== DISCOUNTS ===== -->
-  <h2>2. Discounts</h2>
-  <label>Customer ID: <input id="custId" value="12345"></label><br>
-  <button onclick="genDiscount()">Generate Discount</button>
-  <button onclick="getDiscounts()">My Discounts</button>
-  <pre id="disOut"></pre>
-
-  <!-- ===== SECURITY ALERTS ===== -->
-  <h2>3. Security Alerts</h2>
-  <label>Type: <input id="alertType" value="Fraud"></label><br>
-  <label>Description: <input id="alertDesc" value="Suspicious login" size="40"></label><br>
-  <button onclick="postAlert()">Raise Alert</button>
-  <button onclick="getAlerts()">List Alerts</button>
-  <pre id="secOut"></pre>
-
-  <!-- ===== ANALYTICS ===== -->
-  <h2>4. Analytics</h2>
-  <button onclick="getAnalytics()">Load Analytics</button>
-  <pre id="anOut"></pre>
+    <!-- REGISTER FORM -->
+    <form id="regForm" class="form-box register">
+      <h2>Register</h2>
+      <input name="email" type="email" placeholder="Email" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <button type="submit">Register</button>
+      <p>Already have an account? <span class="switch" data-form="login">Login</span></p>
+    </form>
+  </main>
 
   <script>
-    const API = 'http://localhost:5000';
+    /* ---- flip between forms ---- */
+    document.querySelectorAll('.switch').forEach(el =>
+      el.addEventListener('click', () => {
+        document.body.classList.toggle('show-register');
+      })
+    );
 
-    async function postFeedback() {
-      const body = { rating: +rating.value, comment: comment.value };
-      const res = await fetch(`${API}/api/feedback`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const data = await res.json();
-      fbOut.textContent = JSON.stringify(data, null, 2);
-    }
-    async function getFeedback() {
-      const res = await fetch(`${API}/api/feedback`);
-      const data = await res.json();
-      fbOut.textContent = JSON.stringify(data, null, 2);
-    }
+    /* ---- submit handlers ---- */
+    const API = 'https://afds-backend.onrender.com/api';
 
-    async function genDiscount() {
-      const res = await fetch(`${API}/api/discount/${custId.value}`, { method: 'GET' });
+    loginForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const res = await fetch(`${API}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(e.target)))
+      });
       const data = await res.json();
-      disOut.textContent = JSON.stringify(data, null, 2);
-    }
-    async function getDiscounts() {
-      const res = await fetch(`${API}/api/discounts/${custId.value}`);
-      const data = await res.json();
-      disOut.textContent = JSON.stringify(data, null, 2);
-    }
+      if (res.ok) {
+        localStorage.token = data.token;
+        location.href = '/dashboard.html'; // we’ll create next
+      } else alert(data.error);
+    });
 
-    async function postAlert() {
-      const body = { type: alertType.value, desc: alertDesc.value };
-      const res = await fetch(`${API}/api/security-alert`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    regForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const res = await fetch(`${API}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(e.target)))
+      });
       const data = await res.json();
-      secOut.textContent = JSON.stringify(data, null, 2);
-    }
-    async function getAlerts() {
-      const res = await fetch(`${API}/api/security-alerts`);
-      const data = await res.json();
-      secOut.textContent = JSON.stringify(data, null, 2);
-    }
-
-    async function getAnalytics() {
-      const res = await fetch(`${API}/api/analytics`);
-      const data = await res.json();
-      anOut.textContent = JSON.stringify(data, null, 2);
-    }
+      if (res.ok) {
+        localStorage.token = data.token;
+        location.href = '/dashboard.html';
+      } else alert(data.error);
+    });
   </script>
 </body>
 </html>
