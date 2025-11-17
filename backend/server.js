@@ -107,6 +107,11 @@ app.post('/api/register', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-
+// ---------- error logger ----------
+app.use((err, req, res, _next) => {
+  console.error('[ERROR]', req.method, req.url, err.message);
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal error' });
+});
 // ---------- start ----------
 app.listen(PORT, () => console.log(`AFDS server listening on http://localhost:${PORT}`));
