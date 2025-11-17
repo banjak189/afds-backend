@@ -105,6 +105,7 @@ app.post('/api/register', async (req, res) => {
     const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ token });
   } catch (e) {
+     console.error('[REGISTER] crash', e.message, e.stack); 
     res.status(500).json({ error: e.message });
   }
 });
