@@ -109,6 +109,26 @@ app.post('/api/register', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+// ---------- LOGIN ----------
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'email & password required' });
+  try {
+    const user = await new Promise((resolve, reject) => {
+      findUserByEmail(email, (err, row) => err ? reject(err) : resolve(row));
+    });
+    if (!user) return res.status(401).json({ error: 'invalid credentials' });
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ error: 'invalid credentials' });
+
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token });
+  } catch (e) {
+    console.error('[LOGIN] crash', e.message, e.stack);
+    res.status(500).json({ error: e.message });
+  }
+});
 // ---------- error logger ----------
 app.use((err, req, res, _next) => {
   console.error('[ERROR]', req.method, req.url, err.message);
