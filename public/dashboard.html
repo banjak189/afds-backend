@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>AFDS Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header>
+    <h1>AFDS Dashboard</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
+
+  <main>
+    <p>Welcome! Your token is:</p>
+    <pre id="tokenBox"></pre>
+
+    <h2>Quick Actions</h2>
+    <button onclick="location.href='/'">Back to Auth</button>
+    <button onclick="location.href='/analytics'">View Analytics</button>
+  </main>
+
+  <script>
+    const token = localStorage.token;
+    if (!token) location.href = '/';          // kick to login if no token
+    document.getElementById('tokenBox').textContent = token;
+
+    document.getElementById('logoutBtn').onclick = () => {
+      localStorage.clear();
+      location.href = '/';
+    };
+  </script>
+</body>
+</html>
