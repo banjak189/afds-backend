@@ -1,20 +1,26 @@
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { saveUser, findUserByEmail } = require('./db');
+const {
+  saveUser, findUserByEmail,
+  saveFeedback, getAllFeedback,
+  saveDiscount, getDiscountsByCustomer,
+  saveAlert, getAllAlerts,
+  getFeedbackCount, getDiscountCount, getAlertCount
+} = require('./db');
 
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { saveFeedback, getAllFeedback, saveDiscount, getDiscountsByCustomer, saveAlert, getAllAlerts, getFeedbackCount, getDiscountCount, getAlertCount } = require('./db');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env. || 5000;
 
 app.use(cors());
 app.use(express.json());
 console.log('Static folder:', path.resolve(__dirname, '../public'));
-app.use(express.static(path.join(__dirname,'../public')));
+app.use(express.static(path.join(__dirname, '../public')));
+
 // ---------- root ----------
 app.get('/', (_req, res) => res.json({ message: 'AFDS back-end alive' }));
 
@@ -36,7 +42,6 @@ app.get('/api/feedback', (_req, res) => {
 
 // ---------- discounts ----------
 app.get('/api/discount/:customerId', (req, res) => {
-  // fake generation + store
   const code = 'SAVE' + Math.floor(10 + Math.random() * 90);
   const percent = Math.floor(10 + Math.random() * 20);
   saveDiscount(req.params.customerId, code, percent, (err, id) => {
@@ -81,10 +86,7 @@ app.get('/api/analytics', (_req, res) => {
   });
 });
 
-app.use((req, res, next) => {
-  console.log('Static request:', req.method, req.url);
-  next();
-});
+// ---------- REGISTER ----------
 app.post('/api/register', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'email & password required' });
@@ -105,9 +107,6 @@ app.post('/api/register', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-// ---------- start ----------
-const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`AFDS server listening on port ${PORT}`);
-});
+// ---------- start ----------
+app.listen(PORT, () => console.log(`AFDS server listening on http://localhost:${PORT}`));
