@@ -1,4 +1,8 @@
 require('dotenv').config();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { saveUser, findUserByEmail } = require('./db');
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -81,5 +85,29 @@ app.use((req, res, next) => {
   console.log('Static request:', req.method, req.url);
   next();
 });
+app.post('/api/register', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'email & password required' });
+  try {
+    const existing = await new Promise((resolve, reject) => {
+      findUserByEmail(email, (err, row) => err ? reject(err) : resolve(row));
+    });
+    if (existing) return res.status(409).json({ error: 'email taken' });
+
+    const hash = await bcrypt.hash(password, 10);
+    const id = await new Promise((resolve, reject) => {
+      saveUser(email, hash, (err, lastID) => err ? reject(err) : resolve(lastID));
+    });
+
+    const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 // ---------- start ----------
-app.listen(PORT, () => console.log(`AFDS server listening on http://localhost:${PORT}`));
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`AFDS server listening on port ${PORT}`);
+});

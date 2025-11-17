@@ -35,4 +35,16 @@ function getDiscountCount(cb) {
 function getAlertCount(cb) {
   db.get(`SELECT COUNT(*) AS c FROM security_alerts`, (err, row) => cb(err, row?.c || 0));
 }
-module.exports = { saveFeedback, getAllFeedback, saveDiscount, getDiscountsByCustomer, saveAlert, getAllAlerts,getFeedbackCount, getDiscountCount, getAlertCount };
+function saveUser(email, passwordHash, cb) {
+  db.run(`INSERT INTO users (email, passwordHash) VALUES (?, ?)`, [email, passwordHash], function (err) { cb(err, this?.lastID); });
+}
+function findUserByEmail(email, cb) {
+  db.get(`SELECT * FROM users WHERE email = ?`, [email], cb);
+}
+module.exports = {
+  saveFeedback, getAllFeedback,
+  saveDiscount, getDiscountsByCustomer,
+  saveAlert, getAllAlerts,
+  getFeedbackCount, getDiscountCount, getAlertCount,
+  saveUser, findUserByEmail
+};
