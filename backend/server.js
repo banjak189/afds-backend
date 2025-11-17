@@ -88,6 +88,7 @@ app.get('/api/analytics', (_req, res) => {
 
 // ---------- REGISTER ----------
 app.post('/api/register', async (req, res) => {
+  console.log('[REGISTER] body', req.body);
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'email & password required' });
   try {
