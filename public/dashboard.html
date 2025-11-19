@@ -6,19 +6,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
-      --bg: #0f0c29;
-      --card: #24243e;
+      --bg: #100f1e;
+      --card: #1f1d36;
       --accent: #00c9ff;
+      --accent2: #92fe9d;
       --text: #ffffff;
+      --grey: #9a9a9a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
     body {
-      background: var(--bg);
+      background: linear-gradient(-45deg, #100f1e, #1f1d36, #00c9ff, #92fe9d);
+      background-size: 400% 400%;
+      animation: gradient 12s ease infinite;
       color: var(--text);
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
+    }
+    @keyframes gradient {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
     .card {
       background: var(--card);
@@ -33,7 +42,11 @@
       to { opacity: 1; transform: translateY(0); }
     }
     h1 { margin-bottom: .5rem; }
-    p { margin-bottom: 1.5rem; color: #bbb; }
+    p { margin-bottom: 1.5rem; color: var(--grey); }
+    .stats { display: flex; gap: 1rem; margin: 1.5rem 0; }
+    .tile { flex: 1; background: rgba(255,255,255,.05); padding: 1rem; border-radius: 12px; text-align: center; }
+    .tile .num { display: block; font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .tile .label { font-size: .8rem; color: var(--grey); text-transform: uppercase; letter-spacing: .5px; }
     button {
       background: var(--accent);
       border: none;
@@ -52,19 +65,34 @@
 <body>
   <div class="card" id="box">
     <div id="spinner"></div>
+
     <h1 id="welcome">Loading…</h1>
     <p>Welcome to your protected dashboard.</p>
+
+    <section class="stats">
+      <div class="tile">
+        <span class="num" id="fbCount">-</span>
+        <span class="label">Feedback</span>
+      </div>
+      <div class="tile">
+        <span class="num" id="disCount">-</span>
+        <span class="label">Discounts</span>
+      </div>
+      <div class="tile">
+        <span class="num" id="altCount">-</span>
+        <span class="label">Alerts</span>
+      </div>
+    </section>
+
     <button id="logoutBtn">Logout</button>
   </div>
 
   <script>
     // ---------- 1. Grab token ----------
     const token = localStorage.getItem('token');
-    if (!token) {
-      location.href = '/login.html';   // not logged in → kick out
-    }
+    if (!token) location.href = '/login.html';
 
-    // ---------- 2. Call /api/me ----------
+    // ---------- 2. Load user ----------
     async function loadUser() {
       try {
         const res = await fetch('/api/me', {
@@ -81,7 +109,20 @@
     }
     loadUser();
 
-    // ---------- 3. Logout ----------
+    // ---------- 3. Load analytics ----------
+    async function loadAnalytics() {
+      const res = await fetch('/api/analytics', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      document.getElementById('fbCount').textContent = data.totalFeedback;
+      document.getElementById('disCount').textContent = data.discountsIssued;
+      document.getElementById('altCount').textContent = data.alerts;
+    }
+    loadAnalytics();
+
+    // ---------- 4. Logout ----------
     document.getElementById('logoutBtn').addEventListener('click', () => {
       localStorage.removeItem('token');
       location.href = '/login.html';
