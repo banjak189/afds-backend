@@ -1,34 +1,91 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <title>AFDS Dashboard</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8" />
+  <title>Dashboard – K-Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f0c29;
+      --card: #24243e;
+      --accent: #00c9ff;
+      --text: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .card {
+      background: var(--card);
+      padding: 2.5rem 3rem;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0,201,255,.25);
+      text-align: center;
+      animation: fadeIn .8s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h1 { margin-bottom: .5rem; }
+    p { margin-bottom: 1.5rem; color: #bbb; }
+    button {
+      background: var(--accent);
+      border: none;
+      color: #000;
+      padding: .6rem 1.4rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .2s;
+    }
+    button:hover { transform: scale(1.05); }
+    #spinner { width: 40px; height: 40px; border: 4px solid #555; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>AFDS Dashboard</h1>
+  <div class="card" id="box">
+    <div id="spinner"></div>
+    <h1 id="welcome">Loading…</h1>
+    <p>Welcome to your protected dashboard.</p>
     <button id="logoutBtn">Logout</button>
-  </header>
-
-  <main>
-    <p>Welcome! Your token is:</p>
-    <pre id="tokenBox"></pre>
-
-    <h2>Quick Actions</h2>
-    <button onclick="location.href='/'">Back to Auth</button>
-    <button onclick="location.href='/analytics'">View Analytics</button>
-  </main>
+  </div>
 
   <script>
-    const token = localStorage.token;
-    if (!token) location.href = '/';          // kick to login if no token
-    document.getElementById('tokenBox').textContent = token;
+    // ---------- 1. Grab token ----------
+    const token = localStorage.getItem('token');
+    if (!token) {
+      location.href = '/login.html';   // not logged in → kick out
+    }
 
-    document.getElementById('logoutBtn').onclick = () => {
-      localStorage.clear();
-      location.href = '/';
-    };
+    // ---------- 2. Call /api/me ----------
+    async function loadUser() {
+      try {
+        const res = await fetch('/api/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Invalid token');
+        const data = await res.json();
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('welcome').textContent = `Hey, ${data.name}!`;
+      } catch (err) {
+        localStorage.removeItem('token');
+        location.href = '/login.html';
+      }
+    }
+    loadUser();
+
+    // ---------- 3. Logout ----------
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      location.href = '/login.html';
+    });
   </script>
 </body>
 </html>

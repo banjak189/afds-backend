@@ -129,6 +129,33 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+// ---------- WHOAMI (for dashboard) ----------
+app.get('/api/me', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.sendStatus(401);
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    // we only stored userId in the token, so look the user up
+    findUserByEmail(payload.userId /* you store id here */, (err, user) => {
+      if (err || !user) return res.sendStatus(401);
+      res.json({ name: user.email.split('@')[0] }); // quick friendly name
+    });
+  } catch {
+    res.sendStatus(401);
+  }
+});
+
+// ---------- PROTECT dashboard.html ----------
+app.use('/dashboard.html', (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1] || req.query.token;
+  if (!token) return res.status(401).send('Login required');
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    next(); // token OK → let express.static serve the file
+  } catch {
+    res.status(401).send('Invalid token');
+  }
+});
 // ---------- error logger ----------
 app.use((err, req, res, _next) => {
   console.error('[ERROR]', req.method, req.url, err.message);
