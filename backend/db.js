@@ -39,7 +39,7 @@ function saveUser(email, passwordHash, cb) {
   db.run(`INSERT INTO users (email, passwordHash) VALUES (?, ?)`, [email, passwordHash], function (err) { cb(err, this?.lastID); });
 }
 function findUserByEmail(email, cb) {
-  db.get(`SELECT * FROM users WHERE email = ?`, [email], cb);
+  db.get(`SELECT id, email, passwordHash AS password FROM users WHERE email = ?`, [email], cb);
 }
 module.exports = {
   saveFeedback, getAllFeedback,
