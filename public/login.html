@@ -69,27 +69,27 @@
     <p>Need an account? <a href="/index.html">Register</a></p>
   </div>
 
-  <script>
-    document.getElementById('loginBtn').addEventListener('click', async () => {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
-      if (!email || !password) return alert('Fill both fields');
+ <script>
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    if (!email || !password) return alert('Fill both fields');
 
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Login failed');
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
 
-        localStorage.setItem('token', data.token);
-        location.href = '/dashboard.html';
-      } catch (err) {
-        alert(err.message);
-      }
-    });
-  </script>
+      localStorage.setItem('token', data.token);   // ← this line MUST exist
+      location.href = '/dashboard.html';
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+</script>
 </body>
 </html>
