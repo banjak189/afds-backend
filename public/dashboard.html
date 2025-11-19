@@ -91,7 +91,11 @@
     // ---------- 1. Grab token ----------
     const token = localStorage.getItem('token');
     if (!token) location.href = '/login.html';
-
+console.log('dashboard token:', token);
+if (!token) {
+  console.log('no token - redirecting to login');
+  location.href = '/login.html';
+}
     // ---------- 2. Load user ----------
     async function loadUser() {
       try {
